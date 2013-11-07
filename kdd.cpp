@@ -4,13 +4,16 @@ void run (const char inputfile[], const char outputfile[]) {
 
 	PNGraph G = LoadEdgeList<PNGraph>(inputfile);
 	
-	vector<node> * v =  genMP(G);
+	vector<node> v;
+	genMP(v, G);
 
+	saveMP (v, outputfile);
+	vector<node> v2(v.size());
+	loadMP (v2, outputfile);
+	cout << v2[0].left << endl;
 }
 
-vector<node> * genMP (PNGraph Graph, float RF, float DT) {
-	
-	vector<node> * v = new vector<node>();
+void genMP (vector<node> & v, PNGraph Graph, float RF, float DT) {
 
 	// current K
 	int k = SIZE;
@@ -23,9 +26,10 @@ vector<node> * genMP (PNGraph Graph, float RF, float DT) {
 		node n;
 		n.id = iter.GetId();
 		n.next = iter.GetId();
-		v->push_back(n);
+		v.push_back(n);
 
-		printf("Number of nodes: %d\n", n.id);
+		cout << v[0].left << endl;
+break;
 		// X <- last k vertices in L
 
 		while (false) {
@@ -37,7 +41,7 @@ vector<node> * genMP (PNGraph Graph, float RF, float DT) {
 			// append v to L
 
 			// decrease k if necessary
-			if (v->size() % 1000 == 0) {
+			if (v.size() % 1000 == 0) {
 				if (edgeCount < 2000 * DT * k) {
 					k *= RF;
 				}
@@ -46,9 +50,20 @@ vector<node> * genMP (PNGraph Graph, float RF, float DT) {
 		}
 	}
 
-	return v;
 }
 
-void saveMP (vector<node> * v, const char outputfile[]) {
-	
+void saveMP (const vector<node> & v, const char outputfile[]) {
+	ofstream FILE;
+	FILE.open(outputfile, ios::out|ios::binary);
+	FILE.write(reinterpret_cast<const char*>(&v), sizeof(v));
+	FILE.close();
+}
+
+void loadMP (vector<node> & v, const char inputfile[]) {
+	ifstream FILE;
+	FILE.open(inputfile, ios::in|ios::binary);
+	FILE.seekg (0, ios::end);
+	int length = FILE.tellg();
+	FILE.read(reinterpret_cast<char*>(&v), length);
+	FILE.close();
 }

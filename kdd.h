@@ -3,13 +3,14 @@
 #include <bitset>
 #include <algorithm>
 #include <iterator>
+#include <fstream>
 
 #include "Snap.h"
 
 using namespace std;
 using namespace TSnap;
 
-#define SIZE  8
+#define SIZE 8
 
 struct node {
 	unsigned int id;
@@ -20,6 +21,8 @@ struct node {
 
 void run (const char inputfile[], const char outputfile[]);
 
-vector<node> * genMP (PNGraph Graph, float RF = 0.9, float DT = 0.25);
+void genMP (vector<node> & v, PNGraph Graph, float RF = 0.9, float DT = 0.25);
 
-void saveMP (vector<node> * v, const char outputfile[]);
+void saveMP (const vector<node> & v, const char outputfile[]);
+
+void loadMP (vector<node> & v, const char inputfile[]);

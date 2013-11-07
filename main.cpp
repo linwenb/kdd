@@ -2,7 +2,7 @@
 
 int main () {
 	char readfile[] = "wiki-Vote.txt.gz";
-	char savefile[] = "save";
+	char savefile[] = "wiki-Vote.dat";
 
 	run(readfile, savefile);
 
