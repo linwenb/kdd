@@ -16,8 +16,8 @@ using namespace TSnap;
 
 struct node {
 	int id;
-	bitset<SIZE> left;
-	bitset<SIZE> right;
+	bitset<SIZE> out;
+	bitset<SIZE> in;
 	int next;
 };
 
@@ -32,8 +32,13 @@ void loadMP (vector<node> & v, const char inputfile[]);
 
 
 // helping functions
+void updatePos (const int & id, node & n, vector<node> & MP,  map<int, int> & pos);
 
-void appendNode (vector<node> & MP, const TNGraph::TNodeI & iter, PNGraph & Graph, 
+void updateX (const int k, vector<node> & MP, PNGraph & Graph, set<int> & X, map<int, int> & neighbor);
+
+void updateMP (vector<node> & MP, const int & sizeX, const node & n, PNGraph & Graph, set<int> & inNode, set<int> & outNode);
+
+void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, 
 	set<int> & X, map<int, int> & pos, map<int, int> & neighbor);
 
 void addNeigh (const TNGraph::TNodeI & idIter, set<int> & X, map<int, int> & neighbor, set<int> & inNode, set<int> & outNode);
