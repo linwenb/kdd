@@ -3,19 +3,23 @@
 void run (const char inputfile[], const char outputfile[]) {
 
 	printf("Start read graph\n");
-	PNGraph G = LoadEdgeList<PNGraph>(inputfile, 0, 1);
+	PNGraph G = LoadEdgeList<PNGraph>(inputfile);
 
 	printf("Start generate MP\n");	
 	vector<node> v;
 	genMP(v, G);
 
-	printf("Start save MP\n");
+	queryNeigh (v, G->GetRndNId() );
+
+	printf("Start save MP with vector size %d\n", v.size());
 	saveMP (v, outputfile);
+	saveMP2 (v, "direct6.txt");
 
 	printf("Start read MP\n");
 	vector<node> v2;
 	loadMP (v2, outputfile);
 
+	printf("Start query with vector size %d\n", v2.size());
 }
 
 void genMP (vector<node> & MP, PNGraph & Graph, float RF, float DT) {
@@ -67,6 +71,15 @@ void saveMP (const vector<node> & v, const char outputfile[]) {
 	FILE.close();
 }
 
+void saveMP2 (const vector<node> & v, const char outputfile[]) {
+	ofstream output;
+	output.open(outputfile);
+	for (int i = 0; i < v.size(); i++) {
+		output << v[i].id << ' ' << v[i].in << ' '<< v[i].out << ' '<< v[i].next << endl;
+	}
+	output.close();
+}
+
 void loadMP (vector<node> & v, const char inputfile[]) {
 	ifstream FILE;
 	FILE.open(inputfile, ios::in|ios::binary);
@@ -74,6 +87,39 @@ void loadMP (vector<node> & v, const char inputfile[]) {
 	int length = FILE.tellg();
 	FILE.read(reinterpret_cast<char*>(&v), length);
 	FILE.close();
+}
+
+void queryNeigh (vector<node> & v, const int & key) {
+	
+	vector<int> inNode;
+	vector<int> outNode;
+
+	int curr = key;
+	do {
+		for (int i = 0; i < SIZE; i++) {
+			
+			if (v[curr].in[i]) {
+				inNode.push_back(v[curr + i + 1].id);
+			}
+			if (v[curr].out[i]) {
+				outNode.push_back(v[curr + i + 1].id);
+			}
+		}
+		curr = v[curr].next;
+	} while (curr != key);
+
+	cout << "Node " << v[key].id << endl;
+	cout << "In : ";
+	for (int i = 0 ; i < inNode.size(); i++) {
+		cout << inNode[i] << ' ';
+	}
+	cout << endl;
+
+	cout << "Out : ";
+	for (int i = 0 ; i < outNode.size(); i++) {
+		cout << outNode[i] << ' ';
+	}
+	cout << endl;
 }
 
 void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, set<int> & X, map<int, int> & pos, map<int, int> & neighbor) {

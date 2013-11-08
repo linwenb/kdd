@@ -12,7 +12,7 @@
 using namespace std;
 using namespace TSnap;
 
-#define SIZE 8
+#define SIZE 6
 
 struct node {
 	int id;
@@ -29,7 +29,9 @@ void saveMP (const vector<node> & v, const char outputfile[]);
 
 void loadMP (vector<node> & v, const char inputfile[]);
 
+void queryNeigh(vector<node> & v, const int & key);
 
+void saveMP2 (const vector<node> & v, const char outputfile[]);
 
 // helping functions
 void updatePos (const int & id, node & n, vector<node> & MP,  map<int, int> & pos);
