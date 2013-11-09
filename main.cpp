@@ -1,13 +1,8 @@
 #include "kdd.h"
 
-int main () {
-	//char readfile[] = "wiki-Vote.txt.gz";
-	//char savefile[] = "wiki-Vote.dat";
+int main (int argc, char* argv[]) {
 
-	char readfile[] = "p2p-Gnutella08.txt.gz";
-	char savefile[] = "p2p-Gnutella08.dat";
-
-	run(readfile, savefile);
+	run(argv[1], argv[2]);
 
 	return 0;
 }

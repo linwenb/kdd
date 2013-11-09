@@ -13,13 +13,10 @@ void run (const char inputfile[], const char outputfile[]) {
 
 	printf("Start save MP with vector size %d\n", v.size());
 	saveMP (v, outputfile);
-	saveMP2 (v, "direct6.txt");
 
-	printf("Start read MP\n");
 	vector<node> v2;
 	loadMP (v2, outputfile);
-
-	printf("Start query with vector size %d\n", v2.size());
+	printf("Read MP with vector size %d\n", v2.size());
 }
 
 void genMP (vector<node> & MP, PNGraph & Graph, float RF, float DT) {
@@ -38,9 +35,8 @@ void genMP (vector<node> & MP, PNGraph & Graph, float RF, float DT) {
 		iter = Graph->BegEI();
 		
 		// append d to L
-		appendNode(MP, iter.GetSrcNId(), Graph, X, pos, neighbor);
-
 		// X <- last k vertices in L
+		appendNode(MP, iter.GetSrcNId(), Graph, X, pos, neighbor);
 
 		while (!neighbor.empty()) {
 			// node u most edges to/from X
@@ -108,18 +104,15 @@ void queryNeigh (vector<node> & v, const int & key) {
 		curr = v[curr].next;
 	} while (curr != key);
 
-	cout << "Node " << v[key].id << endl;
-	cout << "In : ";
+	printf("Query node : %d\nIn : ", v[key].id);
 	for (int i = 0 ; i < inNode.size(); i++) {
-		cout << inNode[i] << ' ';
+		printf("%d ", inNode[i]);
 	}
-	cout << endl;
-
-	cout << "Out : ";
+	printf("\nOut : ");
 	for (int i = 0 ; i < outNode.size(); i++) {
-		cout << outNode[i] << ' ';
+		printf("%d ", outNode[i]);
 	}
-	cout << endl;
+	printf("\n");
 }
 
 void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, set<int> & X, map<int, int> & pos, map<int, int> & neighbor) {
@@ -129,33 +122,24 @@ void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, set<int> & 
 
 	TNGraph::TNodeI idIter = Graph->GetNI(id);
 
-	printf("Add node %d, total %d nodes %d edges left\n", id, Graph->GetNodes(), Graph->GetEdges() );
+	printf("Append node %d to MP, total %d edges left\n", id, Graph->GetEdges() );
 
 	node n;
 
 	// update pos
 	updatePos (id, n, MP, pos);
 
-	printf("Update neighbor\n");
 	// update neighbor
 	addNeigh(idIter, X, neighbor, inNode, outNode);
 
-	printf("Update X, now size %d \n", X.size() );
 	// update X
 	int sizeX = X.size();	
 
 	updateX(SIZE, MP, Graph, X, neighbor);
 	X.insert(id);
 
-	printf("Update MP\n");
 	// update MP
 	updateMP (MP, sizeX, n, Graph, inNode, outNode);
-/*
-	if (idIter.GetDeg() == 0) {
-		Graph->DelNode(id);
-	}
-*/
-	printf("Finished append Node\n");
 }
 
 void updateMP (vector<node> & MP, const int & sizeX, const node & n, PNGraph & Graph, set<int> & inNode, set<int> & outNode) {
@@ -194,7 +178,6 @@ void updateX (const int k, vector<node> & MP, PNGraph & Graph, set<int> & X, map
 		X.erase(tempId);
 		
 		tempIter = Graph->GetNI(tempId);
-		printf("remove edges of %d from neighbor, in: %d, out: %d \n", tempId,tempIter.GetInDeg(), tempIter.GetOutDeg());
 
 		for (int e = 0; e < tempIter.GetInDeg(); e++) {
 			tempId = tempIter.GetInNId(e);
@@ -294,7 +277,6 @@ int getMostNeighNode (map<int, int> & neighbor) {
 		v.push_back(make_pair(curr->first, curr->second) );
 	}
 	sort(v.begin(), v.end(), cmp);
-	printf("largest %d \n", v[0].second);
 
 	// delete the node from neighbor map
 	int key = v[0].first;
