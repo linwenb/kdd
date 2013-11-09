@@ -29,8 +29,9 @@ void saveMP (const vector<node> & v, const char outputfile[]);
 
 void loadMP (vector<node> & v, const char inputfile[]);
 
-void queryNeigh(vector<node> & v, const int & key);
+void queryNeigh (vector<node> & v, const int & key);
 
+// format:	id in-bitset out-bitset next
 void saveMP2 (const vector<node> & v, const char outputfile[]);
 
 // helping functions
@@ -41,7 +42,7 @@ void updateX (const int k, vector<node> & MP, PNGraph & Graph, set<int> & X, map
 void updateMP (vector<node> & MP, const int & sizeX, const node & n, PNGraph & Graph, set<int> & inNode, set<int> & outNode);
 
 void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, 
-	set<int> & X, map<int, int> & pos, map<int, int> & neighbor);
+	set<int> & X, const int & k, map<int, int> & pos, map<int, int> & neighbor);
 
 void addNeigh (const TNGraph::TNodeI & idIter, set<int> & X, map<int, int> & neighbor, set<int> & inNode, set<int> & outNode);
 

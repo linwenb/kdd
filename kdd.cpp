@@ -1,7 +1,6 @@
 #include "kdd.h"
 
 void run (const char inputfile[], const char outputfile[]) {
-
 	printf("Start read graph\n");
 	PNGraph G = LoadEdgeList<PNGraph>(inputfile);
 
@@ -12,7 +11,7 @@ void run (const char inputfile[], const char outputfile[]) {
 	queryNeigh (v, G->GetRndNId() );
 
 	printf("Start save MP with vector size %d\n", v.size());
-	saveMP (v, outputfile);
+	saveMP(v, outputfile);
 
 	vector<node> v2;
 	loadMP (v2, outputfile);
@@ -23,6 +22,7 @@ void genMP (vector<node> & MP, PNGraph & Graph, float RF, float DT) {
 
 	// current K
 	int k = SIZE;
+	int edgeCount = 0;
 
 	TNGraph::TEdgeI iter;
 
@@ -36,22 +36,25 @@ void genMP (vector<node> & MP, PNGraph & Graph, float RF, float DT) {
 		
 		// append d to L
 		// X <- last k vertices in L
-		appendNode(MP, iter.GetSrcNId(), Graph, X, pos, neighbor);
+		appendNode(MP, iter.GetSrcNId(), Graph, X, k, pos, neighbor);
 
 		while (!neighbor.empty()) {
 			// node u most edges to/from X
 			// remove edges between v and X
 			int u = getMostNeighNode(neighbor);
 						
-			int edgeCount = 0;
+			edgeCount += Graph->GetNI(u).GetDeg();
 			
 			// append u to L
-			appendNode(MP, u, Graph, X, pos, neighbor);
+			appendNode(MP, u, Graph, X, k, pos, neighbor);
 
-			// decrease k if necessary
+			edgeCount -= Graph->GetNI(u).GetDeg();
+
+			// decrease k and update X if necessary
 			if (MP.size() % 1000 == 0) {
 				if (edgeCount < 2000 * DT * k) {
 					k *= RF;
+					updateX(k, MP, Graph, X, neighbor);
 				}
 				edgeCount = 0;
 			}
@@ -86,7 +89,6 @@ void loadMP (vector<node> & v, const char inputfile[]) {
 }
 
 void queryNeigh (vector<node> & v, const int & key) {
-	
 	vector<int> inNode;
 	vector<int> outNode;
 
@@ -115,8 +117,7 @@ void queryNeigh (vector<node> & v, const int & key) {
 	printf("\n");
 }
 
-void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, set<int> & X, map<int, int> & pos, map<int, int> & neighbor) {
-
+void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, set<int> & X, const int & k, map<int, int> & pos, map<int, int> & neighbor) {
 	set<int> inNode;
 	set<int> outNode;
 
@@ -135,15 +136,14 @@ void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, set<int> & 
 	// update X
 	int sizeX = X.size();	
 
-	updateX(SIZE, MP, Graph, X, neighbor);
+	updateX(k-1, MP, Graph, X, neighbor);
 	X.insert(id);
 
 	// update MP
-	updateMP (MP, sizeX, n, Graph, inNode, outNode);
+	updateMP(MP, sizeX, n, Graph, inNode, outNode);
 }
 
 void updateMP (vector<node> & MP, const int & sizeX, const node & n, PNGraph & Graph, set<int> & inNode, set<int> & outNode) {
-
 	int tempId;
 	int id = n.id;
 	int endMP = MP.size();
@@ -171,10 +171,9 @@ void updateX (const int k, vector<node> & MP, PNGraph & Graph, set<int> & X, map
 	map<int, int>::iterator mapIter;
 	TNGraph::TNodeI tempIter;
 	int tempId;
-	int sizeX = X.size();
 
-	if (sizeX >= SIZE) {
-		tempId = MP[MP.size()-SIZE].id;
+	while (X.size() > k) {
+		tempId = MP[MP.size()-X.size()].id;
 		X.erase(tempId);
 		
 		tempIter = Graph->GetNI(tempId);
@@ -209,7 +208,6 @@ void updateX (const int k, vector<node> & MP, PNGraph & Graph, set<int> & X, map
 }
 
 void updatePos (const int & id, node & n, vector<node> & MP,  map<int, int> & pos) {
-
 	n.id = id;
 
 	int endMP = MP.size();
