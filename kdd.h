@@ -14,11 +14,14 @@ using namespace TSnap;
 
 #define SIZE 6
 
-struct node {
+class node {
+public:
 	int id;
-	bitset<SIZE> out;
-	bitset<SIZE> in;
+	vector<bool> out;
+	vector<bool> in;
 	int next;
+	node() {}
+	node(int k) {out.resize(k);in.resize(k);}
 };
 
 void run (const char inputfile[], const char outputfile[]);

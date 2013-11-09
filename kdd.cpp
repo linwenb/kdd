@@ -73,8 +73,13 @@ void saveMP (const vector<node> & v, const char outputfile[]) {
 void saveMP2 (const vector<node> & v, const char outputfile[]) {
 	ofstream output;
 	output.open(outputfile);
-	for (int i = 0; i < v.size(); i++) {
-		output << v[i].id << ' ' << v[i].in << ' '<< v[i].out << ' '<< v[i].next << endl;
+	for (unsigned int i = 0; i < v.size(); i++) {
+		output << v[i].id << ' ';
+		for(unsigned int j = 0; j < v[i].in.size(); j++)
+			output << v[i].in[j] << ' ';
+		for(unsigned int j = 0; j < v[i].out.size(); j++)
+			output << v[i].out[j] << ' ';
+		output << v[i].next << endl;
 	}
 	output.close();
 }
@@ -94,7 +99,7 @@ void queryNeigh (vector<node> & v, const int & key) {
 
 	int curr = key;
 	do {
-		for (int i = 0; i < SIZE; i++) {
+		for (unsigned int i = 0; i < v[curr].in.size(); i++) {
 			
 			if (v[curr].in[i]) {
 				inNode.push_back(v[curr + i + 1].id);
@@ -107,11 +112,11 @@ void queryNeigh (vector<node> & v, const int & key) {
 	} while (curr != key);
 
 	printf("Query node : %d\nIn : ", v[key].id);
-	for (int i = 0 ; i < inNode.size(); i++) {
+	for (unsigned int i = 0 ; i < inNode.size(); i++) {
 		printf("%d ", inNode[i]);
 	}
 	printf("\nOut : ");
-	for (int i = 0 ; i < outNode.size(); i++) {
+	for (unsigned int i = 0 ; i < outNode.size(); i++) {
 		printf("%d ", outNode[i]);
 	}
 	printf("\n");
@@ -125,7 +130,7 @@ void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, set<int> & 
 
 	printf("Append node %d to MP, total %d edges left\n", id, Graph->GetEdges() );
 
-	node n;
+	node n(k);
 
 	// update pos
 	updatePos (id, n, MP, pos);
@@ -134,8 +139,7 @@ void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, set<int> & 
 	addNeigh(idIter, X, neighbor, inNode, outNode);
 
 	// update X
-	int sizeX = X.size();	
-
+	int sizeX = X.size();
 	updateX(k-1, MP, Graph, X, neighbor);
 	X.insert(id);
 
@@ -153,13 +157,13 @@ void updateMP (vector<node> & MP, const int & sizeX, const node & n, PNGraph & G
 		tempId = MP[endMP-i].id;
 		setIter = inNode.find(tempId);
 		if (setIter != inNode.end()) {
-			MP[endMP-i].out[i-1] = 1;
+			MP[endMP-i].out[i-1] = true;
 			Graph->DelEdge (tempId, id);
 		}
 		
 		setIter = outNode.find(tempId);
 		if (setIter != outNode.end()) {
-			MP[endMP-i].in[i-1] = 1;
+			MP[endMP-i].in[i-1] = true;
 			Graph->DelEdge (id, tempId);
 		}
 	}
