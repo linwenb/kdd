@@ -6,22 +6,20 @@
 #include <fstream>
 #include <map>
 #include <set>
+#include <ctime>
 
 #include "Snap.h"
 
 using namespace std;
 using namespace TSnap;
 
-#define SIZE 6
+#define SIZE 8
 
-class node {
-public:
+struct node {
 	int id;
-	vector<bool> out;
-	vector<bool> in;
 	int next;
-	node() {}
-	node(int k) {out.resize(k);in.resize(k);}
+	bitset<SIZE> in;
+	bitset<SIZE> out;
 };
 
 void run (const char inputfile[], const char outputfile[]);
@@ -32,10 +30,9 @@ void saveMP (const vector<node> & v, const char outputfile[]);
 
 void loadMP (vector<node> & v, const char inputfile[]);
 
-void queryNeigh (vector<node> & v, const int & key);
+void statistic (const char outputfile[], const int vSize, const int totalBits, const int edges);
 
-// format:	id in-bitset out-bitset next
-void saveMP2 (const vector<node> & v, const char outputfile[]);
+void queryNeigh (vector<node> & v, const int & key);
 
 // helping functions
 void updatePos (const int & id, node & n, vector<node> & MP,  map<int, int> & pos);

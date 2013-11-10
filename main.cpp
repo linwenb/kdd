@@ -1,5 +1,7 @@
 #include "kdd.h"
 
+int totalBits;
+
 int main (int argc, char* argv[]) {
 
 	run(argv[1], argv[2]);

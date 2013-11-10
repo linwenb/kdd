@@ -1,21 +1,41 @@
 #include "kdd.h"
 
+extern int totalBits;
+
 void run (const char inputfile[], const char outputfile[]) {
 	printf("Start read graph\n");
 	PNGraph G = LoadEdgeList<PNGraph>(inputfile);
 
-	printf("Start generate MP\n");	
+	totalBits = 0;
+	int edges = G->GetEdges();
+
+	string s = string(outputfile) + ".graph";
+	TFOut FOut(s.c_str()); G->Save(FOut);
+
+	printf("Start generate MP\n");
 	vector<node> v;
+
+	clock_t begin_time = clock();
 	genMP(v, G);
+	clock_t end_time = clock();
 
-	queryNeigh (v, G->GetRndNId() );
+	float tDiff = float( end_time - begin_time ) /  CLOCKS_PER_SEC;
+	printf("\nProcessing time %f sec (%f min)\n", tDiff, tDiff/60);
+	
+	printf("MP size %d\n\n", v.size());
 
-	printf("Start save MP with vector size %d\n", v.size());
+	statistic(outputfile, v.size(), totalBits, edges);
+
+	int key = G->GetRndNId();
+	queryNeigh (v, key);
+
 	saveMP(v, outputfile);
 
 	vector<node> v2;
-	loadMP (v2, outputfile);
-	printf("Read MP with vector size %d\n", v2.size());
+	loadMP(v2, outputfile);
+	printf("Read MP size %d\n", v2.size());
+
+	queryNeigh (v2, key);
 }
 
 void genMP (vector<node> & MP, PNGraph & Graph, float RF, float DT) {
@@ -60,36 +80,52 @@ void genMP (vector<node> & MP, PNGraph & Graph, float RF, float DT) {
 			}
 		}
 	}
+}
 
+void statistic (const char outputfile[], const int vSize, const int bits, const int edges) {
+	ofstream output;
+	output.open("statistic.txt", ios::app);
+	output << outputfile << '\t' << vSize << '\t' << bits << '\t'
+		<< edges << '\t' << 1.0*bits/edges << endl;
+	output.close();
 }
 
 void saveMP (const vector<node> & v, const char outputfile[]) {
 	ofstream FILE;
-	FILE.open(outputfile, ios::out|ios::binary);
-	FILE.write(reinterpret_cast<const char*>(&v), sizeof(node)*v.size());
+	FILE.open(outputfile, ios::out|ios::trunc|ios::binary);
+	for (int i = 0; i< v.size(); i++) {
+		FILE.write(reinterpret_cast<const char*>(&(v[i].id)), sizeof(int));
+		FILE.write(reinterpret_cast<const char*>(&(v[i].next)), sizeof(int));
+		char a,b;
+		for (int j = 7; j >= 0; j--) {
+			a = a<<1 | v[i].in[j];
+			b = b<<1 | v[i].out[j];
+		}
+		FILE.write(reinterpret_cast<const char*>(&a), sizeof(char));
+		FILE.write(reinterpret_cast<const char*>(&b), sizeof(char));
+	}
 	FILE.close();
 }
 
-void saveMP2 (const vector<node> & v, const char outputfile[]) {
-	ofstream output;
-	output.open(outputfile);
-	for (unsigned int i = 0; i < v.size(); i++) {
-		output << v[i].id << ' ';
-		for(unsigned int j = 0; j < v[i].in.size(); j++)
-			output << v[i].in[j] << ' ';
-		for(unsigned int j = 0; j < v[i].out.size(); j++)
-			output << v[i].out[j] << ' ';
-		output << v[i].next << endl;
-	}
-	output.close();
-}
-
 void loadMP (vector<node> & v, const char inputfile[]) {
+	node n;
+	int i;
+	char c;
 	ifstream FILE;
 	FILE.open(inputfile, ios::in|ios::binary);
-	FILE.seekg (0, ios::end);
-	int length = FILE.tellg();
-	FILE.read(reinterpret_cast<char*>(&v), length);
+	while (true) {
+		FILE.read(reinterpret_cast<char*>(&i), sizeof(int));
+		n.id = i;
+		FILE.read(reinterpret_cast<char*>(&i), sizeof(int));
+		n.next = i;
+		FILE.read(reinterpret_cast<char*>(&c), sizeof(char));
+		n.in = bitset<8>(c);
+		FILE.read(reinterpret_cast<char*>(&c), sizeof(char));
+		n.out = bitset<8>(c);
+
+		if (FILE.eof()) break;
+		v.push_back(n);
+	}	
 	FILE.close();
 }
 
@@ -119,7 +155,7 @@ void queryNeigh (vector<node> & v, const int & key) {
 	for (unsigned int i = 0 ; i < outNode.size(); i++) {
 		printf("%d ", outNode[i]);
 	}
-	printf("\n");
+	printf("\n\n");
 }
 
 void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, set<int> & X, const int & k, map<int, int> & pos, map<int, int> & neighbor) {
@@ -130,7 +166,7 @@ void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, set<int> & 
 
 	printf("Append node %d to MP, total %d edges left\n", id, Graph->GetEdges() );
 
-	node n(k);
+	node n;
 
 	// update pos
 	updatePos (id, n, MP, pos);
@@ -145,6 +181,8 @@ void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, set<int> & 
 
 	// update MP
 	updateMP(MP, sizeX, n, Graph, inNode, outNode);
+
+	totalBits += k;
 }
 
 void updateMP (vector<node> & MP, const int & sizeX, const node & n, PNGraph & Graph, set<int> & inNode, set<int> & outNode) {
