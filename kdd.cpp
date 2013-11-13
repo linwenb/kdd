@@ -2,7 +2,7 @@
 
 extern int totalBits;
 
-void run (const char inputfile[], const char outputfile[]) {
+void run (const char inputfile[], const char outputfile[], const int & K, const float & RF, const float & DT) {
 	printf("Start read graph\n");
 	PNGraph G = LoadEdgeList<PNGraph>(inputfile);
 
@@ -16,7 +16,7 @@ void run (const char inputfile[], const char outputfile[]) {
 	vector<node> v;
 
 	clock_t begin_time = clock();
-	genMP(v, G);
+	genMP(v, G, K, RF, DT);
 	clock_t end_time = clock();
 
 	float tDiff = float( end_time - begin_time ) /  CLOCKS_PER_SEC;
@@ -24,8 +24,8 @@ void run (const char inputfile[], const char outputfile[]) {
 	
 	printf("MP size %d\n\n", v.size());
 
-	statistic(outputfile, v.size(), totalBits, edges);
-
+	statistic(outputfile, v.size(), totalBits, edges, K, RF, DT);
+/*
 	int key = G->GetRndNId();
 	queryNeigh (v, key);
 
@@ -36,12 +36,13 @@ void run (const char inputfile[], const char outputfile[]) {
 	printf("Read MP size %d\n", v2.size());
 
 	queryNeigh (v2, key);
+*/
 }
 
-void genMP (vector<node> & MP, PNGraph & Graph, float RF, float DT) {
+void genMP (vector<node> & MP, PNGraph & Graph, const int & K, const float & RF, const float & DT) {
 
 	// current K
-	int k = SIZE;
+	int k = K;
 	int edgeCount = 0;
 
 	TNGraph::TEdgeI iter;
@@ -62,7 +63,7 @@ void genMP (vector<node> & MP, PNGraph & Graph, float RF, float DT) {
 			// node u most edges to/from X
 			// remove edges between v and X
 			int u = getMostNeighNode(neighbor);
-						
+
 			edgeCount += Graph->GetNI(u).GetDeg();
 			
 			// append u to L
@@ -82,11 +83,12 @@ void genMP (vector<node> & MP, PNGraph & Graph, float RF, float DT) {
 	}
 }
 
-void statistic (const char outputfile[], const int vSize, const int bits, const int edges) {
+void statistic (const char outputfile[], const int & vSize, const int bits, const int & edges, const int & K, const float & RF, const float & DT) {
 	ofstream output;
 	output.open("statistic.txt", ios::app);
-	output << outputfile << '\t' << vSize << '\t' << bits << '\t'
-		<< edges << '\t' << 1.0*bits/edges << endl;
+	output << outputfile << '\t' << vSize << '\t'
+		<< bits << '\t' << edges << '\t' << 1.0*bits/edges
+		<< '\t' << K << '\t' << RF << '\t' << DT << endl;
 	output.close();
 }
 
@@ -119,9 +121,9 @@ void loadMP (vector<node> & v, const char inputfile[]) {
 		FILE.read(reinterpret_cast<char*>(&i), sizeof(int));
 		n.next = i;
 		FILE.read(reinterpret_cast<char*>(&c), sizeof(char));
-		n.in = bitset<8>(c);
+		n.in = bitset<SIZE>(c);
 		FILE.read(reinterpret_cast<char*>(&c), sizeof(char));
-		n.out = bitset<8>(c);
+		n.out = bitset<SIZE>(c);
 
 		if (FILE.eof()) break;
 		v.push_back(n);
@@ -169,7 +171,7 @@ void appendNode (vector<node> & MP, const int & id, PNGraph & Graph, set<int> & 
 	node n;
 
 	// update pos
-	updatePos (id, n, MP, pos);
+	updatePos(id, n, MP, pos);
 
 	// update neighbor
 	addNeigh(idIter, X, neighbor, inNode, outNode);

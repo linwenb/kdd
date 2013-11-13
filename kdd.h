@@ -13,7 +13,7 @@
 using namespace std;
 using namespace TSnap;
 
-#define SIZE 8
+#define SIZE 32
 
 struct node {
 	int id;
@@ -22,15 +22,15 @@ struct node {
 	bitset<SIZE> out;
 };
 
-void run (const char inputfile[], const char outputfile[]);
+void run (const char inputfile[], const char outputfile[], const int & K = 8, const float & RF = 0.9, const float & DT = 0.25);
 
-void genMP (vector<node> & MP, PNGraph & Graph, float RF = 0.9, float DT = 0.25);
+void genMP (vector<node> & MP, PNGraph & Graph, const int & K, const float & RF, const float & DT);
 
 void saveMP (const vector<node> & v, const char outputfile[]);
 
 void loadMP (vector<node> & v, const char inputfile[]);
 
-void statistic (const char outputfile[], const int vSize, const int totalBits, const int edges);
+void statistic (const char outputfile[], const int & vSize, const int totalBits, const int & edges, const int & K, const float & RF, const float & DT);
 
 void queryNeigh (vector<node> & v, const int & key);
 
